@@ -51,9 +51,13 @@ class Executor(invoke.Executor):
         # Generate new call list with per-host variants & Connections inserted
         ret = []
         cli_hosts = []
+        
         host_str = self.core[0].args.hosts.value
         if apply_hosts and host_str:
             cli_hosts = host_str.split(",")
+        
+        config_hosts = self.config.hosts
+        
         for call in calls:
             if isinstance(call, Task):
                 call = Call(task=call)
@@ -68,7 +72,7 @@ class Executor(invoke.Executor):
             # (with CLI, being closer to runtime, winning) and normalize to
             # Connection-init kwargs.
             call_hosts = getattr(call, "hosts", None)
-            cxn_params = self.normalize_hosts(cli_hosts or call_hosts)
+            cxn_params = self.normalize_hosts(cli_hosts or config_hosts or call_hosts)
             # Main task, per host/connection
             for init_kwargs in cxn_params:
                 ret.append(self.parameterize(call, init_kwargs))
